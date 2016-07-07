@@ -4,7 +4,7 @@ Digital Homestead CSV Logger creates CSV files of the Walk Over Weigher Data.
 To start:
     python2 digitalhomestead/csvlogger.py --config config/config.json
     
-Where the `config/config.json` is:
+Where `config/config.json` is:
 ```javascript
     {
       "log_file": "csvlogger.log",
