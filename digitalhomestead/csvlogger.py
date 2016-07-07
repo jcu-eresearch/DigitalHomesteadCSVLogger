@@ -1,5 +1,3 @@
-#!/home/eng-nbb/.python/lansdown/bin/python2.6
-
 # DigitalHomesteadCSVLogger logs the Walk Over Weigher data to CSV Files
 # Copyright (C) 2016  NigelB, eResearch, James Cook University
 # 
