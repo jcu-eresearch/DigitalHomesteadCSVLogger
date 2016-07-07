@@ -54,11 +54,22 @@ def unpack_status_message(message):
     value = int(message, 16)
     return struct.unpack("BBBB", struct.pack("I", value))
 
+def accept_transmission(configuration, channel, message):
+    if message['receiver'] in configuration.accept.receiver:
+        return True
+    if message['tag_id'] in configuration.accept.radio_ids:
+        return True
+    if message['location'] in configuration.accept.location:
+        return True
+    return False
+
+
+
 def create_handler(configuration):
     logger = logging.getLogger("Handler")
     def handler(message, channel):
         try:
-            if message['tag_id'] in configuration.radio_ids:
+            if accept_transmission(configuration, channel, message):
                 logging.info(message)
                 print 'data' in message and 'user_payload' in message['data']
                 csv_file_name = os.path.join(configuration.csv_output_dir, "%s.csv"%time.strftime(configuration.csv_format))
@@ -123,6 +134,7 @@ def main():
     with open(args.config, "rb") as data:
         configuration = AttrDict(json.load(data))
         configuration.pubnub = AttrDict(configuration.pubnub)
+        configuration.accept = AttrDict(configuration.accept)
 
     logging.basicConfig(format=configuration.log_format, level=logging.INFO, filename=configuration.log_file)
     logger = logging.getLogger("Main")
