@@ -70,7 +70,7 @@ def create_handler(configuration):
         try:
             if accept_transmission(configuration, channel, message):
                 logging.info(message)
-                print 'data' in message and 'user_payload' in message['data']
+                # print 'data' in message and 'user_payload' in message['data']
                 csv_file_name = os.path.join(configuration.csv_output_dir, "%s.csv"%time.strftime(configuration.csv_format))
                 with open(csv_file_name, "a+") as csv:
                     if os.path.getsize(csv_file_name) == 0:
@@ -130,10 +130,7 @@ def main():
 
     argParse = ArgumentParser(description="Digital Homestead CSV Logger creates CSV files of the Walk Over Weigher Data")
     argParse.add_argument("--config",metavar="<config>", dest="config", default="config.json", action="store", help="The location of the config JSON file. default: config.json")
-<<<<<<< HEAD
-=======
     argParse.add_argument("--input",metavar="<input>", dest="input", action="store", help="Read data from a json file instead of pubnub.")
->>>>>>> 28bf602cd68e242879a735b943cfdd289fdd90e7
     args = argParse.parse_args()
 
     if not os.path.exists(args.config):
@@ -156,10 +153,6 @@ def main():
     hdlr.setLevel(logging.NOTSET)
     logging.root.addHandler(hdlr)
 
-<<<<<<< HEAD
-    pubnub = Pubnub(publish_key=configuration.pubnub.publish_key, subscribe_key=configuration.pubnub.subscribe_key)
-    pubnub.subscribe(channels=configuration.pubnub.channels, callback=create_handler(configuration))
-=======
     _handler = create_handler(configuration)
     if args.input is None:
         pubnub = Pubnub(publish_key=configuration.pubnub.publish_key, subscribe_key=configuration.pubnub.subscribe_key)
@@ -170,7 +163,7 @@ def main():
             json_data = data.read()
         for json_line in json_data.split('\n'):
             _handler(json.loads(json_line), configuration.pubnub.channels[0])
->>>>>>> 28bf602cd68e242879a735b943cfdd289fdd90e7
+
 
 
 if __name__ == "__main__":
