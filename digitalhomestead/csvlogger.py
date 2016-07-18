@@ -44,6 +44,7 @@ def parse_wow(message):
     msg = message['data']['user_payload']
     xmsg = msg.decode('hex')
     id, weight = struct.unpack("qi", xmsg)
+    #print "0x%0.16X" % id
     weight = float(weight) / 100
     logger.info("RCV: %s, ID: %s, Weight: %s" % (message['receiver'], id, weight))
     return id, weight
@@ -78,11 +79,11 @@ def create_handler(configuration):
                     rssi = message['rssi']
                     reciever = message['receiver']
                     sequence = message['data']['sequence']
+                    ts = datetime.datetime.fromtimestamp(message['time'])
                     if 'data' in message:
+                        sequence = message['data']['sequence']
                         if 'user_payload' in message['data']:
                             id, weight = parse_wow(message)
-                            ts = datetime.datetime.fromtimestamp(message['time'])
-
                             print >> csv, "%s,%s,%s,%s,%s,%s,%s,WEIGHT"%(ts, id, weight, tag_id, sequence, rssi, reciever)
 
                         elif 'alt_user_data' in message['data']:
@@ -106,9 +107,18 @@ def create_handler(configuration):
                                     elif status_code == HEARTBEAT_TYPE_HOURLY:
                                         status_message="HEARTBEAT_PERIODIC"
 
-                            print >> csv, "%s,,%s,%s,%s,%s,%s"%(ts, tag_id,sequence, rssi,reciever, status_message)
+                            print >> csv, "%s,,,%s,%s,%s,%s,%s"%(ts, tag_id,sequence, rssi,reciever, status_message)
+                        else:
+                            status_message = ""
+                            if 'vbat' in message['data']:
+                                status_message="SWIPE_VBAT"
+                            elif 'swipe' in message['data']:
+                                status_message = "SWIPE"
+
+                            print >> csv, "%s,,,%s,%s,%s,%s,%s"%(ts, tag_id,sequence, rssi,reciever, status_message)
+
         except Exception, e:
-            logger.debug("Exception: "+e.message, e)
+            logger.error("Exception: "+e.message, e)
     return handler
 
 class AttrDict(dict):
@@ -120,6 +130,10 @@ def main():
 
     argParse = ArgumentParser(description="Digital Homestead CSV Logger creates CSV files of the Walk Over Weigher Data")
     argParse.add_argument("--config",metavar="<config>", dest="config", default="config.json", action="store", help="The location of the config JSON file. default: config.json")
+<<<<<<< HEAD
+=======
+    argParse.add_argument("--input",metavar="<input>", dest="input", action="store", help="Read data from a json file instead of pubnub.")
+>>>>>>> 28bf602cd68e242879a735b943cfdd289fdd90e7
     args = argParse.parse_args()
 
     if not os.path.exists(args.config):
@@ -142,8 +156,21 @@ def main():
     hdlr.setLevel(logging.NOTSET)
     logging.root.addHandler(hdlr)
 
+<<<<<<< HEAD
     pubnub = Pubnub(publish_key=configuration.pubnub.publish_key, subscribe_key=configuration.pubnub.subscribe_key)
     pubnub.subscribe(channels=configuration.pubnub.channels, callback=create_handler(configuration))
+=======
+    _handler = create_handler(configuration)
+    if args.input is None:
+        pubnub = Pubnub(publish_key=configuration.pubnub.publish_key, subscribe_key=configuration.pubnub.subscribe_key)
+        pubnub.subscribe(channels=configuration.pubnub.channels, callback=_handler)
+    else:
+        json_data = ""
+        with open(args.input, "rb") as data:
+            json_data = data.read()
+        for json_line in json_data.split('\n'):
+            _handler(json.loads(json_line), configuration.pubnub.channels[0])
+>>>>>>> 28bf602cd68e242879a735b943cfdd289fdd90e7
 
 
 if __name__ == "__main__":
